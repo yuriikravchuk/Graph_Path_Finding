@@ -28,7 +28,13 @@ public class Starter : MonoBehaviour
         _loadButton.onClick.AddListener(_saveBinder.Load);
         _clearButton.onClick.AddListener(_cellsHandler.DisposeAll);
 
-        _dropdownAlgorithmSelector.Init(new List<PathFindingAlgorithm> {new DephFirstSearch(_cellsHandler.Cells), new BreadthFirstSearch(_cellsHandler.Cells) });
+        _dropdownAlgorithmSelector.Init(new List<PathFindingAlgorithm> 
+        {
+            new DephFirstSearch(_cellsHandler.Cells), 
+            new BreadthFirstSearch(_cellsHandler.Cells), 
+            new WaveSearch(_cellsHandler.Cells) 
+        });
+
         var pathFinder = new PathFinder(_dropdownAlgorithmSelector);
         _cellsSelector.Init(pathFinder);
         _gameStatesFabric.Init(_cellsHandler.Cells, pathFinder);

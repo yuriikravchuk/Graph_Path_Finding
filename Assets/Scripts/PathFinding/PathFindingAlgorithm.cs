@@ -29,7 +29,7 @@ namespace pathFinding
         protected abstract IReadOnlyList<Transition> GetPath(CellPresenter start, CellPresenter end);
 
 
-        protected IReadOnlyList<Connection> GetAvailableConnections(CellPresenter cell)
+        protected IReadOnlyList<Connection> GetAvailableConnections(CellPresenter cell, bool excludeVisitedCells = true)
         {
             var result = new List<Connection>();
             foreach (var connection in cell.Connections)
@@ -39,7 +39,7 @@ namespace pathFinding
 
                 CellPresenter cellToTransit = connection.GetOtherCell(cell);
 
-                if (VisitedCells.Any(item => item == cellToTransit))
+                if (excludeVisitedCells && IsCellVisited(cellToTransit))
                     continue;
 
                 result.Add(connection);
@@ -58,6 +58,8 @@ namespace pathFinding
             _transitions.Add(transition);
             CurrentCell = next;
         }
+
+        protected bool IsCellVisited(CellPresenter cell) => VisitedCells.Any(item => item == cell);
     }
 
     public struct Transition

@@ -10,3 +10,4 @@ public abstract class GameState : MonoBehaviour
 
     public abstract void Transit(GameState state);
 }
+
