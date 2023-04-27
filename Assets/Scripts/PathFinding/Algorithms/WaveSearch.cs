@@ -29,7 +29,7 @@ namespace pathFinding
                     WaveItem<CellPresenter> otherWaveCell = _waveCells.First(cell => cell.Item == otherCell);
                     if(otherWaveCell.Distance == currentCell.Distance - 1)
                     {
-                        var transition = new Transition(currentCell.Item, otherCell, connection);
+                        var transition = new Transition(otherCell, currentCell.Item, connection);
                         path.Add(transition);
                         currentCell = otherWaveCell;
                         break;
@@ -37,6 +37,7 @@ namespace pathFinding
 
                 }
             }
+            path.Reverse();
             return path;
         }
 
