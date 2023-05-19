@@ -50,17 +50,29 @@ namespace pathFinding
                 IEnumerable<TreeNode<WaveItem<CellPresenter>>> tails = treeRoot.GetTails();
                 foreach (var tail in tails)
                 {
-                    WaveItem<CellPresenter> currentWaveCell = tail.Item;
-                    CellPresenter currentCell = currentWaveCell.Item;
-                    IReadOnlyList<Connection> nextConnections = GetAvailableConnections(currentCell);
+                    WaveItem<CellPresenter> tailWaveCell = tail.Item;
+                    CellPresenter currentCell = tailWaveCell.Item;
+                    IReadOnlyList<Connection> nextConnections = GetAvailableConnections(currentCell, false);
                     foreach (var connection in nextConnections)
                     {
-                        CellPresenter cell = connection.GetOtherCell(currentCell);
-                        SwitchCurrentCell(cell, connection);
-                        var waveCell = new WaveItem<CellPresenter>(cell, tail.Item.Distance + 1);
+                        CellPresenter otherCell = connection.GetOtherCell(currentCell);
+                        if(VisitedCells.Any(item => item == otherCell))
+                        {
+                            var otherWaveCell = _waveCells.First(item => item.Item == otherCell);
+                            if (otherWaveCell.Distance > tailWaveCell.Distance + connection.Weight)
+                            {
+                                
+                            }
+                        }
+                        else 
+                        {
+                        SwitchCurrentCell(otherCell, connection);
+                        var waveCell = new WaveItem<CellPresenter>(otherCell, tail.Item.Distance + 1);
                         var treeCell = new TreeNode<WaveItem<CellPresenter>>(waveCell);
                         tail.AddChild(treeCell);
                         _waveCells.Add(waveCell);
+                        }
+
                     }
                 }
             }

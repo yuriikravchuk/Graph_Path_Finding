@@ -32,7 +32,8 @@ public class Starter : MonoBehaviour
         {
             new DephFirstSearch(_cellsHandler.Cells), 
             new BreadthFirstSearch(_cellsHandler.Cells), 
-            new WaveSearch(_cellsHandler.Cells) 
+            new WaveSearch(_cellsHandler.Cells),
+            new DijkstraSearch(_cellsHandler.Cells)
         });
 
         var pathFinder = new PathFinder(_dropdownAlgorithmSelector);

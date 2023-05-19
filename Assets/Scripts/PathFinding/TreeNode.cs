@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using TreeEditor;
 
 namespace pathFinding
 {
@@ -23,6 +25,8 @@ namespace pathFinding
 
         public void AddChild(TreeNode<T> child) => _children.Add(child);
 
+        public void RemoveChind(TreeNode<T> child) => _children.Remove(child);
+
         public IEnumerable<TreeNode<T>> GetTails()
         {
             var tail = new List<TreeNode<T>>();
@@ -43,6 +47,23 @@ namespace pathFinding
                 result.AddRange(Father.GetPath());
             result.Add(this);
             return result;
+        }
+
+        public TreeNode<T> Get(T item)
+        {
+            if(_children.Count == 0)
+                return null;
+
+            foreach (var child in _children)
+            {
+                if(child.Equals(item))
+                    return child;
+
+                TreeNode<T> result = child.Get(item);
+                if (result != null)
+                    return result;
+            }
+            throw new System.NullReferenceException();
         }
     }
 }
