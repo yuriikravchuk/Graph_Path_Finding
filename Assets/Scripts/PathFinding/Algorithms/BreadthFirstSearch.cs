@@ -10,10 +10,10 @@ namespace pathFinding
 
         protected override IReadOnlyList<Transition> GetPath(CellPresenter start, CellPresenter end)
         {
-            var root = new TreeNode<CellPresenter>(start);
+            var root = new WaveNode<CellPresenter>(start);
             while (true)
             {
-                IEnumerable<TreeNode<CellPresenter>> tails = root.GetTails();
+                IEnumerable<WaveNode<CellPresenter>> tails = root.GetTails();
                 foreach (var tail in tails)
                 {
                     var connections = GetAvailableConnections(tail.Item);
@@ -21,13 +21,13 @@ namespace pathFinding
                     foreach (var connection in connections)
                     {
                         CellPresenter cell = connection.GetOtherCell(tail.Item);
-                        TreeNode<CellPresenter> cellWithChildren = new TreeNode<CellPresenter>(cell, tail);
+                        var cellWithChildren = new WaveNode<CellPresenter>(cell, father: tail);
                         tail.AddChild(cellWithChildren);
                         SwitchCurrentCell(cell, connection);
 
                         if (cell == end)
                         {
-                            IReadOnlyList<TreeNode<CellPresenter>> path = cellWithChildren.GetPath();
+                            IReadOnlyList<WaveNode<CellPresenter>> path = cellWithChildren.GetPath();
                             return ConvertPath(path);
                         }
 
@@ -36,7 +36,7 @@ namespace pathFinding
             }
         }
 
-        private static List<Transition> ConvertPath(IReadOnlyList<TreeNode<CellPresenter>> path)
+        private static List<Transition> ConvertPath(IReadOnlyList<WaveNode<CellPresenter>> path)
         {
             var result = new List<Transition>();
             for (int i = 0; i < path.Count - 1; i++)

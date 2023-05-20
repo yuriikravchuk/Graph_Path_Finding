@@ -1,3 +1,4 @@
+using pathFinding;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,77 +6,61 @@ namespace pathFinding
 {
     public partial class WaveSearch : PathFindingAlgorithm
     {
-        private readonly List<WaveItem<CellPresenter>> _waveCells;
-        public WaveSearch(IReadOnlyList<CellPresenter> cells) : base(cells) 
+        //private readonly List<WaveItem<CellPresenter>> _waveCells;
+        public WaveSearch(IReadOnlyList<CellPresenter> cells) : base(cells)
         {
-            _waveCells = new List<WaveItem<CellPresenter>>();
+            //_waveCells = new List<WaveItem<CellPresenter>>();
         }
 
 
         protected override IReadOnlyList<Transition> GetPath(CellPresenter start, CellPresenter end)
         {
-            var startWaveCell = new WaveItem<CellPresenter>(start, 0);
-            BuildPath(startWaveCell);
+            var startNode = new WaveNode<CellPresenter>(start, 0);
+            BuildPath(startNode);
 
-            WaveItem<CellPresenter> endWaveCell = _waveCells.First(cell => cell.Item == end);
+            WaveNode<CellPresenter> endWaveCell = startNode.Get(end);
             var path = new List<Transition>();
-            WaveItem<CellPresenter> currentCell = endWaveCell;
-            while(currentCell.Distance > 0)
+            WaveNode<CellPresenter> currentCell = endWaveCell;
+            while (currentCell.Distance > 0)
             {
                 IEnumerable<Connection> avaiableConnections = GetAvailableConnections(currentCell.Item, false);
-                foreach (var connection in avaiableConnections)
-                {
-                    CellPresenter otherCell = connection.GetOtherCell(currentCell.Item);
-                    WaveItem<CellPresenter> otherWaveCell = _waveCells.First(cell => cell.Item == otherCell);
-                    if(otherWaveCell.Distance == currentCell.Distance - 1)
-                    {
-                        var transition = new Transition(otherCell, currentCell.Item, connection);
-                        path.Add(transition);
-                        currentCell = otherWaveCell;
-                        break;
-                    }
-
-                }
+                List<CellPresenter> avaiableCells = avaiableConnections.Select(item => item.GetOtherCell(currentCell.Item)).ToList();
+                List<WaveNode<CellPresenter>> avaiableNodes = avaiableCells.Select(item => startNode.Get(item)).ToList();
+                int minDistance = avaiableNodes.Min(item => item.Distance);
+                WaveNode<CellPresenter> nextCell = avaiableNodes.First(item => item.Distance == minDistance);
+                Connection nextConnection = avaiableConnections.First(item => item.GetOtherCell(currentCell.Item) == nextCell.Item);
+                var transition = new Transition(nextCell.Item, currentCell.Item, nextConnection);
+                path.Add(transition);
+                currentCell = nextCell;
             }
             path.Reverse();
             return path;
         }
 
-        private void BuildPath(WaveItem<CellPresenter> startWithDistance)
+        private void BuildPath(WaveNode<CellPresenter> startNode)
         {
-            var treeRoot = new TreeNode<WaveItem<CellPresenter>>(startWithDistance);
-            _waveCells.Add(startWithDistance);
+            //var treeRoot = new WaveNode<WaveNode<CellPresenter>>(startNode);
+            //_waveCells.Add(startNode);
             while (VisitedCells.Count < Cells.Count)
             {
-                IEnumerable<TreeNode<WaveItem<CellPresenter>>> tails = treeRoot.GetTails();
+                IEnumerable<WaveNode<CellPresenter>> tails = startNode.GetTails();
                 foreach (var tail in tails)
                 {
-                    WaveItem<CellPresenter> tailWaveCell = tail.Item;
-                    CellPresenter currentCell = tailWaveCell.Item;
-                    IReadOnlyList<Connection> nextConnections = GetAvailableConnections(currentCell, false);
+                   // WaveNode<CellPresenter> currentWaveCell = tail.Item;
+                    CellPresenter currentCell = tail.Item;
+                    IReadOnlyList<Connection> nextConnections = GetAvailableConnections(currentCell);
                     foreach (var connection in nextConnections)
                     {
-                        CellPresenter otherCell = connection.GetOtherCell(currentCell);
-                        if(VisitedCells.Any(item => item == otherCell))
-                        {
-                            var otherWaveCell = _waveCells.First(item => item.Item == otherCell);
-                            if (otherWaveCell.Distance > tailWaveCell.Distance + connection.Weight)
-                            {
-                                
-                            }
-                        }
-                        else 
-                        {
-                        SwitchCurrentCell(otherCell, connection);
-                        var waveCell = new WaveItem<CellPresenter>(otherCell, tail.Item.Distance + 1);
-                        var treeCell = new TreeNode<WaveItem<CellPresenter>>(waveCell);
-                        tail.AddChild(treeCell);
-                        _waveCells.Add(waveCell);
-                        }
-
+                        CellPresenter cell = connection.GetOtherCell(currentCell);
+                        SwitchCurrentCell(cell, connection);
+                        var node = new WaveNode<CellPresenter>(cell, tail.Distance + 1, tail);
+                        //var treeCell = new WaveNode<WaveItem<CellPresenter>>(waveCell);
+                        tail.AddChild(node);
+                        //_waveCells.Add(waveCell);
                     }
                 }
             }
         }
     }
 }
+
