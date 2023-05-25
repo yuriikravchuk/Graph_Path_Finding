@@ -18,14 +18,14 @@ namespace pathFinding
             var startNode = new WaveNode<CellPresenter>(start, 0);
             BuildPath(startNode);
 
-            WaveNode<CellPresenter> endWaveCell = startNode.Get(end);
+            WaveNode<CellPresenter> endWaveCell = startNode.FindNode(end);
             var path = new List<Transition>();
             WaveNode<CellPresenter> currentCell = endWaveCell;
             while (currentCell.Distance > 0)
             {
                 IEnumerable<Connection> avaiableConnections = GetAvailableConnections(currentCell.Item, false);
                 List<CellPresenter> avaiableCells = avaiableConnections.Select(item => item.GetOtherCell(currentCell.Item)).ToList();
-                List<WaveNode<CellPresenter>> avaiableNodes = avaiableCells.Select(item => startNode.Get(item)).ToList();
+                List<WaveNode<CellPresenter>> avaiableNodes = avaiableCells.Select(item => startNode.FindNode(item)).ToList();
                 int minDistance = avaiableNodes.Min(item => item.Distance);
                 WaveNode<CellPresenter> nextCell = avaiableNodes.First(item => item.Distance == minDistance);
                 Connection nextConnection = avaiableConnections.First(item => item.GetOtherCell(currentCell.Item) == nextCell.Item);

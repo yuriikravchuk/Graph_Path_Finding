@@ -49,7 +49,7 @@ namespace pathFinding
             return result;
         }
 
-        public WaveNode<T> Get(T item)
+        public WaveNode<T> FindNode(T item)
         {
             if (item == Item)
                 return this;
@@ -62,7 +62,7 @@ namespace pathFinding
                 if (child.Item == item)
                     return child;
 
-                WaveNode<T> result = child.Get(item);
+                WaveNode<T> result = child.FindNode(item);
                 if (result != null)
                     return result;
             }

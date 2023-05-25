@@ -8,56 +8,66 @@ public class DijkstraSearch : PathFindingAlgorithm
 
     protected override IReadOnlyList<Transition> GetPath(CellPresenter start, CellPresenter end)
     {
-        var startNode = new WaveNode<CellPresenter>(start, 0);
+        var startNode = new WaveNode<CellPresenter>(start);
         BuildPath(startNode);
 
-        WaveNode<CellPresenter> endNode = startNode.Get(end);
+        WaveNode<CellPresenter> endNode = startNode.FindNode(end);
+        IReadOnlyList<WaveNode<CellPresenter>> nodePath = endNode.GetPath();
         var path = new List<Transition>();
-        WaveNode<CellPresenter> currentCell = endNode;
-        while (currentCell.Distance > 0)
+        for(int i = 0; i < nodePath.Count - 1; i++)
         {
-            IEnumerable<Connection> avaiableConnections = GetAvailableConnections(currentCell.Item, false);
-            int minDistance = avaiableConnections.Min(item => item.Weight);
-            Connection connection = avaiableConnections.First(item => item.Weight == minDistance);
-            CellPresenter otherCell = connection.GetOtherCell(currentCell.Item);
-            WaveNode<CellPresenter> otherWaveCell = startNode.Get(otherCell);
-            var transition = new Transition(otherCell, currentCell.Item, connection);
+            CellPresenter from = nodePath[i + 1].Item;
+            CellPresenter to = nodePath[i].Item;
+
+            Connection connection = from.FindConnectionWithCell(to);
+            var transition = new Transition(from, to, connection);
             path.Add(transition);
-            currentCell = otherWaveCell;
+            if (i > 100)
+            {
+                throw new System.StackOverflowException();
+            }
         }
+
+        
         path.Reverse();
         return path;
     }
 
     private void BuildPath(WaveNode<CellPresenter> startNode)
     {
-        var treeRoot = startNode;
-        while (VisitedCells.Count < Cells.Count)
+        int i = 0;
+        while (i < 100)
         {
-            IEnumerable<WaveNode<CellPresenter>> tails = treeRoot.GetTails();
+            IEnumerable<WaveNode<CellPresenter>> tails = startNode.GetTails();
+
             foreach (var tail in tails)
             {
                 CellPresenter currentCell = tail.Item;
                 IReadOnlyList<Connection> availableConnections = GetAvailableConnections(currentCell, false);
                 foreach (var connection in availableConnections)
                 {
-                    CellPresenter otherCell = connection.GetOtherCell(currentCell);
-                    if (IsCellVisited(otherCell))
+                    CellPresenter nextCell = connection.GetOtherCell(currentCell);
+                    WaveNode<CellPresenter> otherNode = startNode.FindNode(nextCell);
+
+                    if (otherNode == null)
                     {
-                        WaveNode<CellPresenter> otherNode = startNode.Get(otherCell);
+                        otherNode = new WaveNode<CellPresenter>(nextCell, tail.Distance + connection.Weight, tail);
+                        tail.AddChild(otherNode);
+                        SwitchCurrentCell(nextCell, connection);
+                    }
+                    else if(otherNode != tail.Father)
+                    {
 
                         if (otherNode.Distance > tail.Distance + connection.Weight)
                             otherNode.UpdateFather(tail, connection.Weight);
                     }
-                    else
-                    {
-                        SwitchCurrentCell(otherCell, connection);
-                        var node = new WaveNode<CellPresenter>(otherCell, tail.Distance + 1);
-                        tail.AddChild(node);
-                    }
 
                 }
             }
+            if (i == 100)
+                break;
+
+            i++;
         }
     }
 }
