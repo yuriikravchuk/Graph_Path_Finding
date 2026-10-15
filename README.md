@@ -2,6 +2,8 @@
 
 An interactive graph editor and path-finding visualiser made in Unity 2021.3 as a university lab work for the Artificial Intelligence course.
 
+**Windows build:** download it from [Releases](../../releases).
+
 Build a graph with the mouse, pick a start and an end node, choose an algorithm, and watch which edges it explores and which path it finds.
 
 ## Algorithms
